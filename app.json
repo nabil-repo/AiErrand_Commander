@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "ai-errand-commander",
+    "slug": "ai-errand-commander",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "ai-errand-commander",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": " """
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/icon2.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "android": {
+      "package": "com.ai.errand.commander",
+      "config": {
+        "googleMaps": {
+          "apiKey": " """
+        }
+      }
+    }
+  }
+}
