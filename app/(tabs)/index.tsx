@@ -89,7 +89,10 @@ export default function HomeScreen() {
 
         // Save route to AsyncStorage and navigate to Map
         await AsyncStorage.setItem('latestOptimizedRoute', JSON.stringify(route));
-        router.push('/(tabs)/map');
+        router.push({
+          pathname: '/(tabs)/map',
+          params: { route: JSON.stringify(route) }
+        });
       }
     } catch (error) {
       console.error('Error processing task:', error);

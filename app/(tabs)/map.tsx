@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Share, Platform, ActionSheetIOS } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function MapScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [route, setRoute] = useState(null);
+
   const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid' | 'terrain'>('standard');
+  const [route, setRoute] = useState<any | null>(null);
+
+
+
 
   useEffect(() => {
     (async () => {
@@ -25,13 +31,45 @@ export default function MapScreen() {
     })();
   }, []);
 
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadRoute = async () => {
+        try {
+          const storedRoute = await AsyncStorage.getItem("latestOptimizedRoute");
+          if (storedRoute) {
+            const parsed = JSON.parse(storedRoute);
+            setRoute(null); // force reset first
+            setTimeout(() => setRoute(parsed), 0);
+            console.log("✅ Loaded stored route:", parsed.places[0].name);
+          } else {
+            setRoute(null);
+            console.log("ℹ️ No stored route found");
+          }
+        } catch (err) {
+          console.warn("❌ Failed to load stored route:", err);
+        }
+      };
+      console.log('MapScreen is focused!');
+      loadRoute();
+    }, [])
+  );
+
+  const mapRef = useRef<MapView>(null);
+
   useEffect(() => {
-    // Load optimized route
-    (async () => {
-      const storedRoute = await AsyncStorage.getItem('latestOptimizedRoute');
-      if (storedRoute) setRoute(JSON.parse(storedRoute));
-    })();
-  }, []);
+    if (route?.places && route.places.length > 0 && mapRef.current) {
+      const coords = route.places.map(p => ({
+        latitude: p.latitude,
+        longitude: p.longitude,
+      }));
+      mapRef.current.fitToCoordinates(coords, {
+        edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
+        animated: true,
+      });
+    }
+  }, [route]);
+
 
   // Layer selection handler
   const handleLayerPress = () => {
@@ -111,6 +149,26 @@ export default function MapScreen() {
     Linking.openURL(url);
   };
 
+  const isValidCoords =
+    location &&
+    location.coords &&
+    typeof location.coords.latitude === 'number' &&
+    typeof location.coords.longitude === 'number' &&
+    !isNaN(location.coords.latitude) &&
+    !isNaN(location.coords.longitude);
+
+  const isValidRoute =
+    route &&
+    Array.isArray(route.places) &&
+    route.places.length > 0 &&
+    route.places.every(
+      p =>
+        typeof p.latitude === 'number' &&
+        typeof p.longitude === 'number' &&
+        !isNaN(p.latitude) &&
+        !isNaN(p.longitude)
+    );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -121,64 +179,69 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.mapContainer}>
-        {location ? (
+        {isValidCoords && isValidRoute ? (
           <MapView
+            ref={mapRef}
             style={styles.map}
             mapType={mapType}
             initialRegion={{
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
+              latitude: location?.coords?.latitude || 37.78825,
+              longitude: location?.coords?.longitude || -122.4324,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
             showsUserLocation={true}
             showsMyLocationButton={true}
-            camera={{
-              center: {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-              },
-              zoom: 15,
-              pitch: 0,
-              heading: 0,
-            }}
           >
             {/* User marker */}
             <Marker
               coordinate={{
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
+                latitude: location?.coords?.latitude,
+                longitude: location?.coords?.longitude,
               }}
               title="You are here"
               pinColor="#10B981"
             />
             {/* Route markers */}
-            {route?.places?.map((place, idx) => (
+
+            {Array.isArray(route?.places) && route?.places?.map((p, i) => (
               <Marker
-                key={`${place.id}_${idx}`}
+                key={`${p.id}_${i}`}
                 coordinate={{
-                  latitude: place.latitude,
-                  longitude: place.longitude,
+                  latitude: p?.latitude,
+                  longitude: p?.longitude,
                 }}
-                title={place.name}
-                description={place.category}
+                title={p?.name}
+                description={p?.category}
                 pinColor="#3B82F6"
               />
             ))}
             {/* Polyline for route if available */}
-            {route?.polyline && (
-              <Polyline
-                coordinates={decodePolyline(route.polyline)}
-                strokeColor="#3B82F6"
-                strokeWidth={4}
-              />
-            )}
+            {route?.polyline && (() => {
+              const points = decodePolyline(route.polyline).filter(
+                p =>
+                  typeof p.latitude === 'number' &&
+                  typeof p.longitude === 'number' &&
+                  !isNaN(p.latitude) &&
+                  !isNaN(p.longitude)
+              );
+              return points.length > 1 ? (
+                <Polyline
+                  coordinates={points}
+                  strokeColor="#3B82F6"
+                  strokeWidth={4}
+                />
+              ) : null;
+            })()}
           </MapView>
         ) : (
           <View style={styles.mapPlaceholder}>
             <Ionicons name="map" size={64} color="#D1D5DB" />
             <Text style={styles.mapPlaceholderTitle}>Loading map...</Text>
             {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
+            {!isValidRoute && (
+              <Text style={styles.errorText}>No valid route to display.</Text>
+            )}
           </View>
         )}
       </View>
@@ -235,7 +298,7 @@ function decodePolyline(encoded: string) {
       longitude: lng / 1e5,
     });
   }
-  console.log("Decoded polyline points:", points);
+  //console.log("Decoded polyline points:", points);
   return points;
 }
 
