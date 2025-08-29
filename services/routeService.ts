@@ -8,7 +8,7 @@ export interface OptimizedRoute {
 }
 
 export class RouteService {
-  private static readonly GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || ' ""';
+  private static readonly GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   static async optimizeRoute(places: Place[], startLatitude: number, startLongitude: number): Promise<OptimizedRoute> {
     if (!this.GOOGLE_MAPS_API_KEY) {
