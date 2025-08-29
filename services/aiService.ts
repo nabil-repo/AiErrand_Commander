@@ -14,7 +14,7 @@ export class AIService {
 
   static async parseTask(taskInput: string): Promise<ParsedTask> {
     try {
-      const apiKey = ' ""';
+      const apiKey = '';
 
 
       const client = new OpenAI({ baseURL: "https://openrouter.ai/api/v1", apiKey, dangerouslyAllowBrowser: true });
