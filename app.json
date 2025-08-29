@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "googleMapsApiKey": " """
+        "googleMapsApiKey": ""
       }
     },
     "web": {
@@ -31,7 +31,7 @@
       "package": "com.ai.errand.commander",
       "config": {
         "googleMaps": {
-          "apiKey": " """
+          "apiKey": ""
         }
       }
     }
