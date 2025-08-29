@@ -3,7 +3,7 @@
 import { Place } from '../components/PlaceCard';
 
 export class FoursquareService {
-  private static readonly API_KEY = " """;
+  private static readonly API_KEY = '';
   private static readonly BASE_URL = 'https://places-api.foursquare.com';
 
   static async searchPlaces(
