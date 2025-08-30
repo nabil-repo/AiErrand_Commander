@@ -1,3 +1,5 @@
+#Apk Installation Link :- https://github.com/nabil-repo/AiErrand_Commander/releases/tag/Android_APK
+
 # AI Errand Commander
 
 AI Errand Commander is a smart assistant app that helps you plan and optimize your daily errands. Enter your tasks (by typing or voice), and the app will find the best places nearby using AI and Foursquare, then generate an optimized route for you.
@@ -16,14 +18,7 @@ AI Errand Commander is a smart assistant app that helps you plan and optimize yo
 - 🗺️ **User Trail:** See your movement trail on the map as you go.
 - 🔒 **Privacy:** Your data stays on your device.
 
----
 
-## Screenshots
-
-<!-- Add screenshots here if available -->
-![Home Screen](assets/screenshots/home.png)
-![Map Screen](assets/screenshots/map.png)
-![History Screen](assets/screenshots/history.png)
 
 ---
 
