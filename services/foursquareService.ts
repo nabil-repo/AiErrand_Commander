@@ -1,5 +1,4 @@
-// TODO: Update the import path below to the correct relative path if PlaceCard.tsx or PlaceCard.ts exists.
-// For example, if PlaceCard.ts is in src/components, use:
+
 import { Place } from '../components/PlaceCard';
 
 export class FoursquareService {
@@ -11,7 +10,7 @@ export class FoursquareService {
     category: string,
     latitude: number,
     longitude: number,
-    radius: number = 3000 // increased radius to 3 km
+    radius: number = 3000 
   ): Promise<Place[]> {
     try {
       const categoryMap: { [key: string]: string[] } = {
@@ -57,7 +56,7 @@ export class FoursquareService {
           typeof place.longitude === 'number'
       ) || [];
 
-      // Fallback: If no results, retry with just category name
+      // Fallback: If no results
       if (results.length === 0) {
         const fallbackResponse = await fetch(
           `${this.BASE_URL}/places/search?ll=${latitude},${longitude}&radius=${radius}&query=${encodeURIComponent(category)}&limit=20&sort=DISTANCE`,
@@ -128,7 +127,7 @@ export class FoursquareService {
         name: place.name,
         address: place.location.formatted_address || `${place.location.address || ''} ${place.location.locality || ''}`.trim(),
         category: place.categories[0]?.name.toLowerCase() || 'general',
-        distance: place.distance, // Distance would need to be calculated
+        distance: place.distance,
         rating: place.rating || 0,
         hours: this.formatHours(place.hours),
         phone: place.tel,
